@@ -1,59 +1,56 @@
-import React from "react"
+import React, { useState } from "react"
 import { useQuery, useMutation } from "@apollo/client"
 import gql from "graphql-tag"
-
+import { Button, TextField } from "@material-ui/core"
 
 const GET_TODOS = gql`
-{
-  todos {
-    id,
-    task,
-  }
-}
-`
-
-const ADD_TODO = gql`
-  mutation addTodo($task: String!){
-    addTodo(task: $task){
+  {
+    todos {
+      id
       task
     }
   }
 `
 
+const ADD_TODO = gql`
+  mutation addTodo($task: String!) {
+    addTodo(task: $task) {
+      task
+    }
+  }
+`
 
 export default function Home() {
-  let inputText;
+  let [inputText, setInputText] = useState("");
 
-  const [ addTodo ] = useMutation(ADD_TODO);
+  const [addTodo] = useMutation(ADD_TODO)
 
   const addTask = () => {
     addTodo({
       variables: {
-        task: inputText.value
+        task: inputText
       },
-      refetchQueries: [{ query: GET_TODOS }]
+      refetchQueries: [{ query: GET_TODOS }],
     })
-    inputText.value = ""
   }
-  const { error, data } = useQuery(GET_TODOS);
+  const { error, data } = useQuery(GET_TODOS)
 
-  if(error){
+  if (error) {
     return <h2>Error!</h2>
   }
-  if(!data){
+  if (!data) {
     return <h2>Loading..!!</h2>
   }
   return (
     <div>
       <h1>Todo List</h1>
-      <label>
-        <h3>Add Task</h3>
-        <input type="text" ref={node => (
-          inputText = node
-        )} />
-      </label>
-      <button onClick={addTask}>Add Task</button>
-      <br /><br />
+      <TextField type="text" onChange={(e) => setInputText(e.target.value)} />
+      <br />
+      <Button onClick={addTask} variant="contained">
+        Add Task
+      </Button>
+      <br />
+      <br />
       {JSON.stringify(data)}
     </div>
   )
